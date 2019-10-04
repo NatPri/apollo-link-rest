@@ -968,7 +968,8 @@ const resolver: Resolver = async (
 
   let body = undefined;
   let overrideHeaders: Headers = undefined;
-  if (-1 === ['GET', 'DELETE'].indexOf(method)) {
+  const httpMethodRequiresBody = -1 === ['GET', 'DELETE'].indexOf(method);
+  if (httpMethodRequiresBody || bodySerializer) {
     // Prepare our body!
     if (!bodyBuilder) {
       // By convention GraphQL recommends mutations having a single argument named "input"
@@ -1011,7 +1012,8 @@ const resolver: Resolver = async (
         : serializers[DEFAULT_SERIALIZER_KEY](body, headers);
     }
 
-    body = serializedBody.body;
+    // Only set the body for HTTP requests that require a body
+    body = httpMethodRequiresBody ? serializedBody.body : undefined;
     overrideHeaders = new Headers(serializedBody.headers);
   }
 
